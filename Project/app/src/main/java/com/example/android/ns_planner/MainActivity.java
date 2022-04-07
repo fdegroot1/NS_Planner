@@ -37,16 +37,24 @@ import com.example.android.ns_planner.api.NSApiManager;
 import com.example.android.ns_planner.api.ORSApiListener;
 import com.example.android.ns_planner.api.ORSApiManager;
 import com.example.android.ns_planner.data.Station;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+
+
+import java.util.ArrayList;
+
+public class MainActivity extends AppCompatActivity implements NSApiListener, ORSApiListener {
     MapView map = null;
     private MyLocationNewOverlay mLocationOverlay;
     FusedLocationProviderClient fusedLocationProviderClient;
     int PERMISSION_ID = 44;
     double longitude;
     double latitude;
-
-import java.util.ArrayList;
-
-public class MainActivity extends AppCompatActivity implements NSApiListener, ORSApiListener {
 
     private String LOGTAG = MainActivity.class.getName();
     private ArrayList<Station> stations;
@@ -81,13 +89,13 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
 
         getLastLocation();
         
-        Location clocation = fusedLocationProviderClient.getLastLocation().getResult();
-        GeoPoint location = new GeoPoint(clocation.getLatitude(), clocation.getLongitude());
-        mapController.setCenter(location);
+//        Location clocation = fusedLocationProviderClient.getLastLocation().getResult();
+//        GeoPoint location = new GeoPoint(clocation.getLatitude(), clocation.getLongitude());
+//        mapController.setCenter(location);
 
         stations = new ArrayList<>();
-        //nsApiManager = new NSApiManager(this,this);
-        //nsApiManager.getStations();
+        nsApiManager = new NSApiManager(this,this);
+        nsApiManager.getStations();
         orsApiManager = new ORSApiManager(this,this);
         orsApiManager.getRoute(8.681495,49.41461,8.687872,49.420318);
     }
