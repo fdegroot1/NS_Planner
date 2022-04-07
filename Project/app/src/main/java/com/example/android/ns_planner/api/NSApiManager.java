@@ -24,8 +24,8 @@ import java.util.Map;
 
 public class NSApiManager {
 
-    private NSApiListener listener;
     private Context context;
+    private NSApiListener listener;
     private RequestQueue queue;
     private String LOGTAG = NSApiManager.class.getName();
     private String key =  "a477187c39e64c06803f8a613c8f620a";
@@ -81,7 +81,7 @@ public class NSApiManager {
             @Override
             public Map<String,String> getHeaders() throws AuthFailureError{
                 Map<String, String> params = new HashMap<>();
-                params.put("Ocp-Apim-Subscription-Key", "a477187c39e64c06803f8a613c8f620a");
+                params.put("Ocp-Apim-Subscription-Key", key);
 
                 return params;
             }
@@ -140,7 +140,7 @@ public class NSApiManager {
             @Override
             public Map<String,String> getHeaders() throws AuthFailureError{
                 Map<String, String> params = new HashMap<>();
-                params.put("Ocp-Apim-Subscription-Key", "a477187c39e64c06803f8a613c8f620a");
+                params.put("Ocp-Apim-Subscription-Key", key);
 
                 return params;
             }
