@@ -36,6 +36,7 @@ import com.example.android.ns_planner.api.NSApiListener;
 import com.example.android.ns_planner.api.NSApiManager;
 import com.example.android.ns_planner.api.ORSApiListener;
 import com.example.android.ns_planner.api.ORSApiManager;
+import com.example.android.ns_planner.data.Departure;
 import com.example.android.ns_planner.data.Station;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -218,15 +219,29 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
     public void onStation(Station station) {
         Log.d(LOGTAG, "New station added name = "+station.getName());
         stations.add(station);
+
     }
 
     @Override
-    public void onDeparture() {
+    public void onDeparture(Station station) {
+        Log.d(LOGTAG, "New departures added = "+station.getDepartures());
+        Intent intent = new Intent(this,StationActivity.class);
+        intent.putExtra("departures",station.getDepartures());
+        intent.putExtra("station_name",station.getName());
+        startActivity(intent);
 
     }
 
     public void onClick(View view) {
-        nsApiManager.getDepartures(stations.get(10));
+
+
+
+        for(int i=0;i<stations.size();i++){
+            if(stations.get(i).getName().equals("Rotterdam Lombardijen")){
+                nsApiManager.getDepartures(stations.get(i));
+            }
+        }
+
     }
 
     @Override
