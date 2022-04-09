@@ -3,6 +3,7 @@ package com.example.android.ns_planner;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.res.ResourcesCompat;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -10,6 +11,7 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.*;
+import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
@@ -49,12 +51,13 @@ import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements NSApiListener, ORSApiListener {
-    MapView map = null;
+    private MapView map = null;
     private MyLocationNewOverlay mLocationOverlay;
-    FusedLocationProviderClient fusedLocationProviderClient;
-    int PERMISSION_ID = 44;
-    double longitude;
-    double latitude;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private int PERMISSION_ID = 44;
+    private double longitude;
+    private double latitude;
+    private IMapController mapController;
 
     private String LOGTAG = MainActivity.class.getName();
     private ArrayList<Station> stations;
@@ -71,33 +74,32 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
 
         map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
-
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
 
-        IMapController mapController = map.getController();
+        mapController = map.getController();
         mapController.setZoom(12);
         GeoPoint startPoint = new GeoPoint(51.8587, 4.6063);
         mapController.setCenter(startPoint);
-
 
         this.mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(ctx), map);
         this.mLocationOverlay.enableMyLocation();
         map.getOverlays().add(this.mLocationOverlay);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
         getLastLocation();
-        
-//        Location clocation = fusedLocationProviderClient.getLastLocation().getResult();
-//        GeoPoint location = new GeoPoint(clocation.getLatitude(), clocation.getLongitude());
-//        mapController.setCenter(location);
 
         stations = new ArrayList<>();
         nsApiManager = new NSApiManager(this,this);
         nsApiManager.getStations();
         orsApiManager = new ORSApiManager(this,this);
         orsApiManager.getRoute(8.681495,49.41461,8.687872,49.420318);
+
+    }
+
+    private void changeMapCenter(Location location){
+        GeoPoint clocation = new GeoPoint(location.getLatitude(), location.getLongitude());
+        mapController.setCenter(clocation);
     }
 
     @SuppressLint("MissingPermission")
@@ -121,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
                         } else {
                             latitude = location.getLatitude();
                             longitude = location.getLongitude();
+                            changeMapCenter(location);
                         }
                     }
                 });
@@ -213,11 +216,24 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
         map.onPause();
     }
 
+    private void addMarker(Station station){
+        Marker marker = new Marker(map);
+        marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker, MapView mapView) {
+                //poopoopeepee
+                return false;
+            }
+        });
+        marker.setPosition(new GeoPoint(station.getLat(), station.getLng()));
+        map.getOverlays().add(marker);
+    }
 
     @Override
     public void onStation(Station station) {
         Log.d(LOGTAG, "New station added name = "+station.getName());
         stations.add(station);
+        addMarker(station);
     }
 
     @Override
