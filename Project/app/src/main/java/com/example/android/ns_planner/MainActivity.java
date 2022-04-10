@@ -253,18 +253,6 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
 
     }
 
-    public void onClick(View view) {
-
-
-
-        for(int i=0;i<stations.size();i++){
-            if(stations.get(i).getName().equals("Rotterdam Lombardijen")){
-                nsApiManager.getDepartures(stations.get(i));
-            }
-        }
-
-    }
-
     @Override
     public void onRoute(double travelTime) {
         this.travelTime = travelTime;
