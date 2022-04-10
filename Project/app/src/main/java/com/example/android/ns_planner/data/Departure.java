@@ -1,8 +1,9 @@
 package com.example.android.ns_planner.data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class Departure {
+public class Departure implements Serializable {
     String name;
     String direction;
     String categoryName;

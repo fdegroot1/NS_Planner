@@ -125,6 +125,7 @@ public class NSApiManager {
                                 departuresArrayList.add(departure);
                             }
                             station.setDepartures(departuresArrayList);
+                            listener.onDeparture(station);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
