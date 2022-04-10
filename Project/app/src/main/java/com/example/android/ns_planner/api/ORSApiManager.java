@@ -49,6 +49,7 @@ public class ORSApiManager {
                     double travelTime = info.getDouble("duration");
                     Log.d(LOGTAG, "Travel time in seconds: "+travelTime);
                     Log.d(LOGTAG, "Travel time in minutes: "+travelTime/60);
+                    listener.onRoute(travelTime);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
