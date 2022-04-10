@@ -19,6 +19,8 @@ import java.lang.Object;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -40,18 +42,29 @@ import com.example.android.ns_planner.api.ORSApiListener;
 import com.example.android.ns_planner.api.ORSApiManager;
 import com.example.android.ns_planner.data.Departure;
 import com.example.android.ns_planner.data.Station;
+import com.google.android.gms.common.internal.Constants;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofenceStatusCodes;
+import com.google.android.gms.location.GeofencingClient;
+import com.google.android.gms.location.GeofencingEvent;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 
 import java.util.ArrayList;
+import java.util.List;
+
+import static android.content.ContentValues.TAG;
 
 public class MainActivity extends AppCompatActivity implements NSApiListener, ORSApiListener {
+    private GeofencingClient geofencingClient;
     private MapView map = null;
     private MyLocationNewOverlay mLocationOverlay;
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -60,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
     private double latitude;
     private double travelTime;
     private IMapController mapController;
+    private ArrayList<Geofence> geofenceList = new ArrayList<Geofence>();
 
     private String LOGTAG = MainActivity.class.getName();
     private ArrayList<Station> stations;
@@ -88,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
         this.mLocationOverlay.enableMyLocation();
         this.mLocationOverlay.enableFollowLocation();
         map.getOverlays().add(this.mLocationOverlay);
+
+        geofencingClient = LocationServices.getGeofencingClient(this);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
@@ -230,6 +246,75 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
         });
         marker.setPosition(new GeoPoint(station.getLat(), station.getLng()));
         map.getOverlays().add(marker);
+
+        geofenceList.add(new Geofence.Builder()
+                // Set the request ID of the geofence. This is a string to identify this
+                // geofence.
+                .setRequestId(station.getName())
+
+                .setCircularRegion(
+                        station.getLat(),
+                        station.getLng(),
+                        200
+                )
+                .setExpirationDuration(Geofence.NEVER_EXPIRE )
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
+                        Geofence.GEOFENCE_TRANSITION_EXIT)
+                .build());
+    }
+
+    private PendingIntent geofencePendingIntent;
+    private PendingIntent getGeofencePendingIntent() {
+        // Reuse the PendingIntent if we already have it.
+        if (geofencePendingIntent != null) {
+            return geofencePendingIntent;
+        }
+        Intent intent = new Intent(this, GeofenceBroadcastReceiver.class);
+        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when
+        // calling addGeofences() and removeGeofences().
+        geofencePendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.
+                FLAG_UPDATE_CURRENT);
+        return geofencePendingIntent;
+    }
+
+    public class GeofenceBroadcastReceiver extends BroadcastReceiver {
+        public void onReceive(Context context, Intent intent) {
+            GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
+            if (geofencingEvent.hasError()) {
+                String errorMessage = GeofenceStatusCodes
+                        .getStatusCodeString(geofencingEvent.getErrorCode());
+                Log.e(TAG, errorMessage);
+                return;
+            }
+
+            // Get the transition type.
+            int geofenceTransition = geofencingEvent.getGeofenceTransition();
+
+            // Test that the reported transition was of interest.
+            if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
+                    geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+
+                // Get the geofences that were triggered. A single event can trigger
+                // multiple geofences.
+                List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
+                Log.d("Geofence", "geofence triggered");
+
+                // Get the transition details as a String.
+//                String geofenceTransitionDetails = getGeofenceTransitionDetails(
+//                        this,
+//                        geofenceTransition,
+//                        triggeringGeofences
+//                );
+//
+//                // Send notification and log the transition details.
+//                sendNotification(geofenceTransitionDetails);
+//                Log.i(TAG, geofenceTransitionDetails);
+            } else {
+                // Log the error.
+//                Log.e(TAG, getString(R.string.geofence_transition_invalid_type,
+//                        geofenceTransition));
+            }
+        }
     }
 
     @Override
