@@ -222,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
         marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
-                //poopoopeepee
+                nsApiManager.getDepartures(station);
                 return false;
             }
         });
