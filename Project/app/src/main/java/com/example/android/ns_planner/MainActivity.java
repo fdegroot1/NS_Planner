@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
     private int PERMISSION_ID = 44;
     private double longitude;
     private double latitude;
+    private double travelTime;
     private IMapController mapController;
 
     private String LOGTAG = MainActivity.class.getName();
@@ -85,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
 
         this.mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(ctx), map);
         this.mLocationOverlay.enableMyLocation();
+        this.mLocationOverlay.enableFollowLocation();
         map.getOverlays().add(this.mLocationOverlay);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -93,14 +95,14 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
         stations = new ArrayList<>();
         nsApiManager = new NSApiManager(this,this);
         nsApiManager.getStations();
-        orsApiManager = new ORSApiManager(this,this);
-        orsApiManager.getRoute(8.681495,49.41461,8.687872,49.420318);
+        //orsApiManager = new ORSApiManager(this,this);
+        //orsApiManager.getRoute(mLocationOverlay.getMyLocation().getLongitude(),mLocationOverlay.getMyLocation().getLatitude(),,49.420318);
 
     }
 
     private void changeMapCenter(Location location){
-        GeoPoint clocation = new GeoPoint(location.getLatitude(), location.getLongitude());
-        mapController.setCenter(clocation);
+        GeoPoint cLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
+        mapController.setCenter(cLocation);
     }
 
     @SuppressLint("MissingPermission")
@@ -243,6 +245,10 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
         Intent intent = new Intent(this,StationActivity.class);
         intent.putExtra("departures",station.getDepartures());
         intent.putExtra("station_name",station.getName());
+        intent.putExtra("my_location_lng", mLocationOverlay.getMyLocation().getLongitude());
+        intent.putExtra("my_location_lat", mLocationOverlay.getMyLocation().getLatitude());
+        intent.putExtra("station_lng", station.getLng());
+        intent.putExtra("station_lat",station.getLat());
         startActivity(intent);
 
     }
@@ -260,8 +266,8 @@ public class MainActivity extends AppCompatActivity implements NSApiListener, OR
     }
 
     @Override
-    public void onRoute() {
-
+    public void onRoute(double travelTime) {
+        this.travelTime = travelTime;
     }
 }
 
